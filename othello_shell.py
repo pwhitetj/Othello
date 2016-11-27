@@ -1,4 +1,6 @@
 import othello_v0001 as ob
+from multiprocessing import Process, Value, Array
+
 othello=ob.v0001()
 
 def human(player, board):
@@ -47,9 +49,9 @@ def main(black_choice = None, white_choice = None, black_name="Black", white_nam
     try:
         if (black_choice == None or white_choice == None):
             #black, white = get_players()
-            black, white = othello.alphabeta_searcher(8, othello.weighted_score), \
-                           othello.alphabeta_searcher(8, othello.weighted_score)
-            black_name, white_name = "Alpha-Beta 8", "Alpha-Beta 8"
+            black, white = othello.alphabeta_searcher(6, othello.weighted_score), \
+                           othello.alphabeta_searcher(6, othello.weighted_score)
+            black_name, white_name = "Alpha-Beta 8a", "Alpha-Beta 8b"
             #black, white = othello.random_strategy, othello.maximizer(othello.score)
         else:
             (black, white) = [options[k] for k in (black_choice, white_choice)]
@@ -62,7 +64,7 @@ def main(black_choice = None, white_choice = None, black_name="Black", white_nam
         print(e)
         return
     except EOFError as e:
-        print('Goodbye.')
+        print('Goodbye!')
         return
     print('Final score:', score1)
     print('%s wins!' % ('Black' if score1 > 0 else 'White'))

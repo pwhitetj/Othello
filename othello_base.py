@@ -73,6 +73,9 @@ chapter 18 of Peter Norvig's "Paradigms of Artificial Intelligence".
 
 # The outside edge is marked ?, empty squares are ., black is @, and white is o.
 # The black and white pieces represent the two players.
+
+from multiprocessing import Value
+
 EMPTY, BLACK, WHITE, OUTER = '.', '@', 'o', '?'
 PIECES = (EMPTY, BLACK, WHITE, OUTER)
 PLAYERS = {BLACK: 'Black', WHITE: 'White'}
@@ -229,10 +232,10 @@ class OthelloBase:
         return None
 
 
-    def get_move(self, strategy, player, board):
+    def get_move(self, strategy, player, board, best = None):
         """Call strategy(player, board) to get a move."""
         copy = list(board)  # copy the board to prevent cheating
-        move = strategy(player, copy)
+        move = strategy(player, copy, best)
         if not self.is_valid(move) or not self.is_legal(move, player, board):
             raise self.IllegalMoveError(player, move, copy)
         return move

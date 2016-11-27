@@ -1,17 +1,18 @@
 import othello_base_GUI as ob
 import random
+from copy import copy
 
 SQUARE_WEIGHTS = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 120, -20, 20, 5, 5, 20, -20, 120, 0,
+    0,   0,   0,  0,  0,  0,  0,   0,   0, 0,
+    0, 120, -20, 20,  5,  5, 20, -20, 120, 0,
     0, -20, -40, -5, -5, -5, -5, -40, -20, 0,
-    0, 20, -5, 15, 3, 3, 15, -5, 20, 0,
-    0, 5, -5, 3, 3, 3, 3, -5, 5, 0,
-    0, 5, -5, 3, 3, 3, 3, -5, 5, 0,
-    0, 20, -5, 15, 3, 3, 15, -5, 20, 0,
+    0,  20,  -5, 15,  3,  3, 15,  -5,  20, 0,
+    0,   5,  -5,  3,  3,  3,  3,  -5,   5, 0,
+    0,   5,  -5,  3,  3,  3,  3,  -5,   5, 0,
+    0,  20,  -5, 15,  3,  3, 15,  -5,  20, 0,
     0, -20, -40, -5, -5, -5, -5, -40, -20, 0,
-    0, 120, -20, 20, 5, 5, 20, -20, 120, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 120, -20, 20,  5,  5, 20, -20, 120, 0,
+    0,   0,   0,  0,  0,  0,  0,   0,   0, 0,
 ]
 
 # Values for endgame boards are big constants.
@@ -85,7 +86,7 @@ class v0001(ob.OthelloGUI):
     
     # The maximizer strategies are very short-sighted, and a player who can consider
     # the implications of a move several turns in advance could have a significant
-    # advantage.  The **self.minimax** algorithm does just that.
+    # advantage.  The **minimax** algorithm does just that.
     
     def minimax(self, player, board, depth, evaluate):
         """
@@ -150,9 +151,9 @@ class v0001(ob.OthelloGUI):
     # self.minimax is very effective, but it does too much work: it evaluates many search
     # trees that should be ignored.
     
-    # Consider what happens when self.minimax is evaluating two moves, M1 and M2, on one
-    # level of a search tree.  Suppose self.minimax determines that M1 can result in a
-    # score of S.  While evaluating M2, if self.minimax finds a move in its subtree that
+    # Consider what happens when minimax is evaluating two moves, M1 and M2, on one
+    # level of a search tree.  Suppose minimax determines that M1 can result in a
+    # score of S.  While evaluating M2, if minimax finds a move in its subtree that
     # could result in a better score than S, the algorithm should immediately quit
     # evaluating M2: the self.opponent will force us to play M1 to avoid the higher score
     # resulting from M1, so we shouldn't waste time determining just how much better
@@ -165,10 +166,10 @@ class v0001(ob.OthelloGUI):
     #
     # When the algorithm begins, alpha is the smallest value and beta is the largest
     # value.  During evaluation, if we find a move that causes `alpha >= beta`, then
-    # we can quit searching this subtree since the self.opponent can prevent us from
+    # we can quit searching this subtree since the opponent can prevent us from
     # playing it.
     
-    def alphabeta(self, player, board, alpha, beta, depth, evaluate):
+    def alphabeta(self, player, board, alpha, beta, depth, evaluate, best_shared):
         """
         Find the best legal move for player, searching to the specified depth.  Like
         self.minimax, but uses the bounds alpha and beta to prune branches.
@@ -184,7 +185,7 @@ class v0001(ob.OthelloGUI):
             # achievable by the self.opponent.  Similarly, `beta` is the worst score that
             # our self.opponent can hold us to, so it is the best score that they can
             # achieve.
-            return -self.alphabeta(self.opponent(player), board, -beta, -alpha, depth - 1, evaluate)[0]
+            return -self.alphabeta(self.opponent(player), board, -beta, -alpha, depth - 1, evaluate, None)[0]
     
         moves = self.legal_moves(player, board)
         if not moves:
@@ -193,6 +194,9 @@ class v0001(ob.OthelloGUI):
             return value(board, alpha, beta), None
     
         best_move = moves[0]
+        if best_shared is not None: best_shared.value = moves[0]
+        moves.sort(key = lambda x: abs(x-32)+random.randrange(-10,10))
+
         for move in moves:
             if alpha >= beta:
                 # If one of the legal moves leads to a better score than beta, then
@@ -204,12 +208,15 @@ class v0001(ob.OthelloGUI):
                 # achievable score, then replace it with this one.
                 alpha = val
                 best_move = move
+                if best_shared is not None: best_shared.value = best_move
+        #print ("interior: best-move %i best-shared %i" % (best_move, best_shared.value))
+        #print("Returning ", best_move)
         return alpha, best_move
     
     
     def alphabeta_searcher(self, depth, evaluate):
-        def strategy(player, board):
-            return self.alphabeta(player, board, MIN_VALUE, MAX_VALUE, depth, evaluate)[1]
+        def strategy(player, board, best_shared):
+            return self.alphabeta(player, board, MIN_VALUE, MAX_VALUE, depth, evaluate, best_shared)[1]
     
         return strategy
     
