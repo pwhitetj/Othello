@@ -232,10 +232,10 @@ class OthelloBase:
         return None
 
 
-    def get_move(self, strategy, player, board, best = None):
+    def get_move(self, strategy, player, board, best = None, running = None):
         """Call strategy(player, board) to get a move."""
         copy = list(board)  # copy the board to prevent cheating
-        move = strategy(player, copy, best)
+        move = strategy(player, copy, best, running)
         if not self.is_valid(move) or not self.is_legal(move, player, board):
             raise self.IllegalMoveError(player, move, copy)
         return move

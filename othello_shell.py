@@ -49,9 +49,9 @@ def main(black_choice = None, white_choice = None, black_name="Black", white_nam
     try:
         if (black_choice == None or white_choice == None):
             #black, white = get_players()
-            black, white = othello.alphabeta_searcher(6, othello.weighted_score), \
-                           othello.alphabeta_searcher(6, othello.weighted_score)
-            black_name, white_name = "Alpha-Beta 8a", "Alpha-Beta 8b"
+            black, white = othello.alphabeta_searcher(4, othello.weighted_score), \
+                           othello.alphabeta_searcher(9, othello.weighted_score)
+            black_name, white_name = "Alpha-Beta 4", "Alpha-Beta 9b"
             #black, white = othello.random_strategy, othello.maximizer(othello.score)
         else:
             (black, white) = [options[k] for k in (black_choice, white_choice)]

@@ -169,11 +169,17 @@ class v0001(ob.OthelloGUI):
     # we can quit searching this subtree since the opponent can prevent us from
     # playing it.
     
-    def alphabeta(self, player, board, alpha, beta, depth, evaluate, best_shared):
+    def alphabeta(self, player, board, alpha, beta, depth, evaluate, best_shared, running):
         """
         Find the best legal move for player, searching to the specified depth.  Like
         self.minimax, but uses the bounds alpha and beta to prune branches.
         """
+        if running.value == 0:
+            if best_shared == None:
+                return 0, None
+            else:
+                return best_shared.value, None
+
         if depth == 0:
             return evaluate(player, board), None
     
@@ -185,7 +191,7 @@ class v0001(ob.OthelloGUI):
             # achievable by the self.opponent.  Similarly, `beta` is the worst score that
             # our self.opponent can hold us to, so it is the best score that they can
             # achieve.
-            return -self.alphabeta(self.opponent(player), board, -beta, -alpha, depth - 1, evaluate, None)[0]
+            return -self.alphabeta(self.opponent(player), board, -beta, -alpha, depth - 1, evaluate, None, running)[0]
     
         moves = self.legal_moves(player, board)
         if not moves:
@@ -215,8 +221,8 @@ class v0001(ob.OthelloGUI):
     
     
     def alphabeta_searcher(self, depth, evaluate):
-        def strategy(player, board, best_shared):
-            return self.alphabeta(player, board, MIN_VALUE, MAX_VALUE, depth, evaluate, best_shared)[1]
+        def strategy(player, board, best_shared, running):
+            return self.alphabeta(player, board, MIN_VALUE, MAX_VALUE, depth, evaluate, best_shared, running)[1]
     
         return strategy
     

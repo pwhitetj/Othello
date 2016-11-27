@@ -2,6 +2,8 @@ import othello_base as ob
 import pygame
 import time
 from multiprocessing import Process, Value
+import os
+import signal
 
 BOARD_X0 = 290
 BOARD_Y0 = 10
@@ -145,7 +147,6 @@ class OthelloGUI(ob.OthelloBase):
 
         player = ob.BLACK
         strategy = lambda who: black_strategy if who == ob.BLACK else white_strategy
-        start_time = time.time()
         while player is not None:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -155,20 +156,25 @@ class OthelloGUI(ob.OthelloBase):
                     break
 
             #move = self.get_move(strategy(player), player, board)
+            start_time = time.time()
+
             best_shared = Value("i", -1)
             best_shared.value = 11
-            p = Process(target=self.get_move, args=(strategy(player), player, board, best_shared))
+            running = Value("i", 1)
+            p = Process(target=self.get_move, args=(strategy(player), player, board, best_shared, running))
             p.start()
             t1 = time.time()
             print("starting %i" % p.pid, "*"*50, t1-start_time)
-            p.join(1.5)
+            p.join(2)
             move = best_shared.value
-            p.terminate()
+            running.value = 0
+            #p.terminate()
+            if p.is_alive(): os.kill(p.pid, signal.SIGKILL)
             t2 = time.time()
             print("Killing  %i" % p.pid,"&"*50, t2-t1)
 
             #while p.is_alive():
-                #pass
+            #    print("alive")
             t3 = time.time()
             print("Killed", "-"*60, t3-t2)
             print("move = ", move, "best = ", best_shared.value)
