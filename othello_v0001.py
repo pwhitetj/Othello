@@ -201,7 +201,8 @@ class v0001(ob.OthelloGUI):
     
         best_move = moves[0]
         if best_shared is not None: best_shared.value = moves[0]
-        moves.sort(key = lambda x: abs(x-32)+random.randrange(-10,10))
+        #random.shuffle(moves)
+        #moves.sort(key = lambda x: abs(x-32)+random.randrange(-10,10))
 
         for move in moves:
             if alpha >= beta:

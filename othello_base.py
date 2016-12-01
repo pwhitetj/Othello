@@ -209,7 +209,7 @@ class OthelloBase:
     # - Apply it to the board.
     # - Switch players.  If the game is over, get the final score.
 
-    def play(self,black_strategy, white_strategy):
+    def play(self, black_strategy, white_strategy):
         """Play a game of Othello and return the final board and score."""
         board = self.initial_board()
         player = BLACK

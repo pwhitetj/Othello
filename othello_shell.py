@@ -24,6 +24,7 @@ options = {'human': human,
            'ab-weighted-diff':
                othello.alphabeta_searcher(3, othello.weighted_score)}
 
+
 def check(move, player, board):
     return othello.is_valid(move) and othello.is_legal(move, player, board)
 
@@ -49,16 +50,15 @@ def main(black_choice = None, white_choice = None, black_name="Black", white_nam
     try:
         if (black_choice == None or white_choice == None):
             #black, white = get_players()
-            black, white = othello.alphabeta_searcher(4, othello.weighted_score), \
-                           othello.alphabeta_searcher(9, othello.weighted_score)
-            black_name, white_name = "Alpha-Beta 4", "Alpha-Beta 9b"
+            black, white = othello.alphabeta_searcher(7, othello.weighted_score), \
+                           othello.alphabeta_searcher(7, othello.weighted_score)
+            black_name, white_name = "Alpha-Beta 7a", "Alpha-Beta 7b"
             #black, white = othello.random_strategy, othello.maximizer(othello.score)
         else:
-            (black, white) = [options[k] for k in (black_choice, white_choice)]
-        board, score1 = othello.play(black, white, black_name, white_name)
-        #board, score2 = othello.play(black, white, black_name, white_name)
-        #board, score3 = othello.play(black, white, black_name, white_name)
-        othello.end_wait()
+            (black, white) = black_choice, white_choice
+            #(black, white) = [options[k] for k in (black_choice, white_choice)]
+        board, score = othello.play(black, white, black_name, white_name)
+        return (board, score)
 
     except othello.IllegalMoveError as e:
         print(e)
@@ -66,9 +66,26 @@ def main(black_choice = None, white_choice = None, black_name="Black", white_nam
     except EOFError as e:
         print('Goodbye!')
         return
-    print('Final score:', score1)
-    print('%s wins!' % ('Black' if score1 > 0 else 'White'))
+    print('Final score:', score )
+    print('%s wins!' % ('Black' if score  > 0 else 'White'))
     print(othello.print_board(board))
 
 if __name__=="__main__":
-    main()
+    strategy_A = othello.alphabeta_searcher(5, othello.weighted_score)
+    strategy_B = othello.alphabeta_searcher(3, othello.weighted_score)
+    name_A = "Alpha-Beta 5"
+    name_B = "Alpha-Beta 3"
+
+    scores = []
+    wins = {name_A:0, name_B:0}
+    for i in range(4):
+        board, score  = main(strategy_A, strategy_B, name_A, name_B)
+        scores += [score]
+        if score > 0:
+            wins[name_A]+=1
+        elif score < 0:
+            wins[name_B]+=1
+        (strategy_A, strategy_B) = strategy_B, strategy_A
+        name_A, name_B = name_B, name_A
+    print(scores, wins)
+    othello.end_wait()

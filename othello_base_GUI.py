@@ -24,6 +24,7 @@ class OthelloGUI(ob.OthelloBase):
         white_piece_images = [pygame.transform.scale(white_piece_image, (10 + 10 * i, 10 + 10 * i)) for i in range(7)]
         self.player_images = {ob.BLACK: black_piece_images,
                               ob.WHITE: white_piece_images}
+        self.my_turn_image = pygame.image.load("Lightning.png").convert()
         white_sound = pygame.mixer.Sound("gem_ping_A.wav")
         black_sound = pygame.mixer.Sound("gem_ping_B.wav")
         self.player_sounds = {ob.BLACK: black_sound,
@@ -42,8 +43,8 @@ class OthelloGUI(ob.OthelloBase):
         putY = BOARD_Y0 + row * SQUARE_WIDTH
         if animate:
             for (d,img) in zip(range(30,-1,-5),self.player_images[player]):
-                self.screen.blit(img, (putX+d, putY+d, SQUARE_WIDTH-2*d, SQUARE_WIDTH-2*d))
-                pygame.display.update(pygame.Rect(putX, putY, SQUARE_WIDTH-2*d, SQUARE_WIDTH-2*d))
+                self.screen.blit(img, (putX+d, putY+d, SQUARE_WIDTH-d, SQUARE_WIDTH-d))
+                pygame.display.update(pygame.Rect(putX, putY, SQUARE_WIDTH-d, SQUARE_WIDTH-d))
         else:
             self.screen.blit(self.player_images[player][-1], (putX, putY, SQUARE_WIDTH, SQUARE_WIDTH))
             pygame.display.flip()
@@ -62,8 +63,10 @@ class OthelloGUI(ob.OthelloBase):
         """Update the board to reflect the move by the specified player."""
         board[move] = player
         if not silent:
-            self.draw_move(move, player, board)
+            self.draw_move(move, player, board, animate=True)
             self.player_sounds[player].play()
+        else:
+            self.draw_move(move, player, board, animate=False)
         for d in ob.DIRECTIONS:
             self.make_flips(move, player, board, d, silent)
         return board
@@ -79,8 +82,22 @@ class OthelloGUI(ob.OthelloBase):
             if not silent:
                 self.draw_flip(square, player, board)
                 self.flip_sound.play()
+            else:
+                self.draw_flip(square, player, board)
             square += direction
             #print(direction, player, move)
+
+    def show_player_icon(self, player):
+        self.screen.blit(self.board_image, (100, 160), (100, 160, 40, 90))
+        self.screen.blit(self.board_image, (1140, 160), (1140, 160, 40, 90))
+
+        if player == ob.BLACK:
+            self.screen.blit(self.my_turn_image, (100, 160))
+            pygame.display.flip()
+
+        else:
+            self.screen.blit(self.my_turn_image, (1140, 160))
+            pygame.display.flip()
 
     def count_up(self, board, player):
         return len([i for i in board if i == player])
@@ -146,6 +163,8 @@ class OthelloGUI(ob.OthelloBase):
         self.update_score(board)
 
         player = ob.BLACK
+        self.show_player_icon(player)
+
         strategy = lambda who: black_strategy if who == ob.BLACK else white_strategy
         while player is not None:
             for event in pygame.event.get():
@@ -161,27 +180,29 @@ class OthelloGUI(ob.OthelloBase):
             best_shared = Value("i", -1)
             best_shared.value = 11
             running = Value("i", 1)
+            print("%s to move" % player)
             p = Process(target=self.get_move, args=(strategy(player), player, board, best_shared, running))
             p.start()
             t1 = time.time()
-            print("starting %i" % p.pid, "*"*50, t1-start_time)
+            #print("starting %i" % p.pid, "*"*50, t1-start_time)
             p.join(2)
             move = best_shared.value
             running.value = 0
             #p.terminate()
             if p.is_alive(): os.kill(p.pid, signal.SIGKILL)
             t2 = time.time()
-            print("Killing  %i" % p.pid,"&"*50, t2-t1)
+            #print("Killing  %i" % p.pid,"&"*50, t2-t1)
 
             #while p.is_alive():
             #    print("alive")
             t3 = time.time()
-            print("Killed", "-"*60, t3-t2)
-            print("move = ", move, "best = ", best_shared.value)
-            self.make_move(move, player, board, silent = False)
+            #print("Killed", "-"*60, t3-t2)
+            print("move = ", move, "player = ", player)
+            self.make_move(move, player, board, silent = True)
             self.update_score(board)
             # print(self.print_board(board))
             player = self.next_player(board, player)
+            self.show_player_icon(player)
 
         black_score = self.score(ob.BLACK, board)
         if black_score > 0:
