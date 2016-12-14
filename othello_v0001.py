@@ -1,6 +1,10 @@
 import othello_base_GUI as ob
 import random
 from copy import copy
+from multiprocessing import Process, Value
+import os
+import signal
+import time
 
 SQUARE_WEIGHTS = [
     0,   0,   0,  0,  0,  0,  0,   0,   0, 0,
@@ -227,7 +231,24 @@ class v0001(ob.OthelloGUI):
     
         return strategy
     
-    
+
+    def time_limited(self, a_strategy, time_limit):
+        def strategy(player, board, best_shared, running):
+            best_shared = Value("i", -1)
+            best_shared.value = 11
+            running = Value("i", 1)
+            print("%s to move" % player)
+            p = Process(target=self.get_move, args=(a_strategy, player, board, best_shared, running))
+            p.start()
+            p.join(time_limit)
+            move = best_shared.value
+            running.value = 0
+            p.terminate()
+            if p.is_alive(): os.kill(p.pid, signal.SIGKILL)
+            return move
+
+        return strategy
+
         # -----------------------------------------------------------------------------
         # <a id="conclusion"></a>
         ## Conclusion

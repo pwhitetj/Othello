@@ -46,20 +46,12 @@ def get_players():
     white = get_choice('WHITE: choose a strategy', options)
     return black, white
 
-def main(black_choice = None, white_choice = None, black_name="Black", white_name="White"):
+def main(black_choice, white_choice, black_name="Black", white_name="White"):
     try:
-        if (black_choice == None or white_choice == None):
-            #black, white = get_players()
-            black, white = othello.alphabeta_searcher(7, othello.weighted_score), \
-                           othello.alphabeta_searcher(7, othello.weighted_score)
-            black_name, white_name = "Alpha-Beta 7a", "Alpha-Beta 7b"
-            #black, white = othello.random_strategy, othello.maximizer(othello.score)
-        else:
-            (black, white) = black_choice, white_choice
-            #(black, white) = [options[k] for k in (black_choice, white_choice)]
+        (black, white) = black_choice, white_choice
+        #(black, white) = [options[k] for k in (black_choice, white_choice)]
         board, score = othello.play(black, white, black_name, white_name)
         return (board, score)
-
     except othello.IllegalMoveError as e:
         print(e)
         return
@@ -71,8 +63,8 @@ def main(black_choice = None, white_choice = None, black_name="Black", white_nam
     print(othello.print_board(board))
 
 if __name__=="__main__":
-    strategy_A = othello.alphabeta_searcher(5, othello.weighted_score)
-    strategy_B = othello.alphabeta_searcher(3, othello.weighted_score)
+    strategy_A = othello.time_limited(othello.alphabeta_searcher(5, othello.weighted_score),2)
+    strategy_B = othello.time_limited(othello.alphabeta_searcher(3, othello.weighted_score),5)
     name_A = "Alpha-Beta 5"
     name_B = "Alpha-Beta 3"
 

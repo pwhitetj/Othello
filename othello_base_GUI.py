@@ -174,29 +174,7 @@ class OthelloGUI(ob.OthelloBase):
                     pygame.quit()
                     break
 
-            #move = self.get_move(strategy(player), player, board)
-            start_time = time.time()
-
-            best_shared = Value("i", -1)
-            best_shared.value = 11
-            running = Value("i", 1)
-            print("%s to move" % player)
-            p = Process(target=self.get_move, args=(strategy(player), player, board, best_shared, running))
-            p.start()
-            t1 = time.time()
-            #print("starting %i" % p.pid, "*"*50, t1-start_time)
-            p.join(2)
-            move = best_shared.value
-            running.value = 0
-            #p.terminate()
-            if p.is_alive(): os.kill(p.pid, signal.SIGKILL)
-            t2 = time.time()
-            #print("Killing  %i" % p.pid,"&"*50, t2-t1)
-
-            #while p.is_alive():
-            #    print("alive")
-            t3 = time.time()
-            #print("Killed", "-"*60, t3-t2)
+            move = self.get_move(strategy(player), player, board)
             print("move = ", move, "player = ", player)
             self.make_move(move, player, board, silent = True)
             self.update_score(board)
